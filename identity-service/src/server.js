@@ -20,7 +20,7 @@ mongoose
 
 //redis connection
 const redisClient = new Redis(process.env.REDIS_URL);
-const PORT = 3001
+const PORT = process.env.PORT || 3001;
 //Middleware
 app.use(helmet());
 app.use(cors());
@@ -81,9 +81,9 @@ app.use('/api/auth', routes);
 //errror handler
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
   logger.info(
-    `Identity service is Running on http://localhost:${process.env.PORT}`
+    `Identity service is Running on http://localhost:${PORT}`
   );
 });
 
