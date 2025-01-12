@@ -1,16 +1,14 @@
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 const User = require('../models/userModel');
 const { validateRegistration } = require('../utils/validation');
 const generateTokens = require('../utils/generateToken');
-//user register
 const registerUser = async (req, res) => {
   logger.info('Registration endpoint hit..');
 
   try {
-    //validate schema
     const { error } = validateRegistration(req.body);
     if (error) {
-      logger.warn(`validation error`, error.details[0].message);
+      logger.warn(`Validation error: ${error.details[0].message}`);
       return res.status(400).json({
         success: false,
         message: error.details[0].message,
@@ -18,41 +16,45 @@ const registerUser = async (req, res) => {
     }
 
     const { email, username, password } = req.body;
-    const user = await User.findOne({ $or: [{ email }, { username }] });
+
+    let user = await User.findOne({ $or: [{ email }, { username }] });
     if (user) {
-      logger.warn(`user already exists`);
+      logger.warn('User already exists');
       return res.status(400).json({
         success: false,
-        message: 'user already exists',
+        message: 'User already exists',
       });
     }
 
+    // Create and save the user
     user = new User({ username, email, password });
     await user.save();
+    logger.info(`User saved successfully: ${JSON.stringify(user)}`);
 
-    logger.warn('user saved successfully', user._id);
+    // Validate the saved user object
+    if (!user || !user._id || !user.username) {
+      logger.error('Invalid user object after saving:', { user });
+      throw new Error('Invalid user object after saving');
+    }
 
-    const { accessToken, refreshToken } = await generateTokens();
-    res.status(201).json({
+    // Generate tokens
+    const { accessToken, refreshToken } = await generateTokens(user);
+
+    return res.status(201).json({
       success: true,
-      message: 'user Register successfully',
+      message: 'User registered successfully',
       accessToken,
       refreshToken,
     });
   } catch (error) {
-    logger.error('Registration error occur', error);
-    res.status(500).json({
+    logger.error('Registration error occur', { error: error.stack });
+    return res.status(500).json({
       success: false,
-      message: 'internal server error',
+      message: 'Internal server error',
     });
   }
 };
-//user login
 
-//refresh token
-
-//user logout
-
-module.exports = {
-  registerUser,
-};
+module.exports={
+  registerUser
+}
