@@ -11,13 +11,12 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    mediaUrls: [
+    mediaIds: [
       {
         type: String,
       },
     ],
-    createdAt: Date,
-    default: Date.now,
+    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
