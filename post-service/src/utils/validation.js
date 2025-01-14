@@ -9,8 +9,6 @@ const validateCreatePost = (data) => {
 };
 
 
-
-
 module.exports = {
     validateCreatePost,
 };
