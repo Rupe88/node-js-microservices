@@ -6,6 +6,16 @@ const createPost = async (req, res) => {
     
     const { content, mediaIds } = req.body;
 
+    const post=await Post.findOne({content});
+    if(post){
+      logger.warn("Post already exists",)
+
+      return res.status(400).json({
+        success:false,
+        message:"Post Already Exists in Database"
+      })
+    }
+
     const newlyCreatedPost = new Post({
       user: req.user.userId,
       content,
