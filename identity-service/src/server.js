@@ -27,7 +27,7 @@ app.use(cors());
 app.use(express.json());
 app.use((req, res, next) => {
   logger.info(`Received ${req.method} request to ${req.url}`);
-  logger.info(`Request body ${req.body} request to ${req.body}`);
+  logger.info(`Request body: ${JSON.stringify(req.body)}`);
   next();
 });
 
@@ -39,17 +39,17 @@ const rateLimiter = new RateLimiterRedis({
   duration: 1,
 });
 
-app.use(async(req, res, next) => {
-    try {
-        await rateLimiter.consume(req.ip); // Consume 1 point
-        next(); // Allow the request to proceed
-      } catch (rateLimiterRes) {
-        logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
-        return res.status(429).json({
-          success: false,
-          message: 'Too many requests',
-        });
-      }
+app.use(async (req, res, next) => {
+  try {
+    await rateLimiter.consume(req.ip); // Consume 1 point
+    next(); // Allow the request to proceed
+  } catch (rateLimiterRes) {
+    logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests',
+    });
+  }
 });
 
 //IP BASED RATE LIMITING FOR SENSITIVE ENDPOINTS
@@ -82,9 +82,7 @@ app.use('/api/auth', routes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  logger.info(
-    `Identity service is Running on http://localhost:${PORT}`
-  );
+  logger.info(`Identity service is Running on http://localhost:${PORT}`);
 });
 
 //unhandled promise rejection
